@@ -1,0 +1,32 @@
+#!/usr/bin/env expect
+
+# Two problems here, neither of them a big deal: send_user doesn't
+# output much, and we cannot match the '#' prompt for some
+# reason. (Some reason I can't remember, probably solved this a dozen
+# times in twenty years).
+
+set timeout 2
+
+send_user "Spawning connection to MariaDB container...\n"
+spawn docker exec -ti minutes-api_minutes-db_1 /bin/sh
+# expect {
+#     "#\r" send_user "Found the prompt."
+#     timeout {
+# 	send_user "Failed to find the prompt."
+# 	close
+# 	exit
+#     }
+# }
+sleep 2
+send_user "Logged into the container.\n"
+send "mysql --user=root --password=supersecret --database=minutes_dev\r"
+expect "Welcome to the MariaDB monitor"
+send_user "Logged into MariaDB.\n"
+send "SET GLOBAL general_log_file = '/tmp/general_query.log';\r"
+expect "Query OK, 0 rows affected"
+send "SET GLOBAL general_log = 'ON';\r"
+expect "Query OK, 0 rows affected"
+send "\\q\r"
+expect "Bye"
+send "tail -f /tmp/general_query.log\r"
+interact

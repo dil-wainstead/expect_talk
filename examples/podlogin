@@ -1,0 +1,25 @@
+#!/usr/bin/env expect
+
+# require the namespace (rizzo, bee, hive)
+if {[llength $argv] != 1} {
+    send_user "Error: please provide the namespace (rizzo, bee, hive)"
+    exit 1
+}
+set namespace [lindex $argv 0]
+
+send_user "Calling for the pod name in '$namespace' namespace..."
+set cmdresult [exec kubectl -n $namespace get pods | grep minutes-api]
+send_user "Got: $cmdresult"
+set podname [lindex [split $cmdresult " "] 0]
+send_user "Logging into $podname..."
+spawn kubectl -n $namespace exec -ti $podname -- /bin/sh
+# todo: catch login failures, but for now...
+interact
+
+# Prompt me if I want to login to the database? send_user?
+
+send_user "End of line.\n"
+
+# Local Variables:
+# mode: tcl
+# End:
